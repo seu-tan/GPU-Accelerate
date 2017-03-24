@@ -1,0 +1,79 @@
+﻿一.centos7 NVIDIA显卡驱动安装：
+ 
+ 
+1.首先查看自己显卡型号，去官网下载对应的驱动 http://www.geforce.cn/drivers 
+
+ 
+2.安装epel源，elrepo源
+
+ 
+3.安装bumblebee  yum install bumblebee
+
+ 
+4.安装gcc编译环境  yum install gcc gcc-c++
+
+ 
+5.安装kernel headers
+   # uname -r
+   # yum install kernel-devel-$(uname -r) kernel-headers-$(uname -r)
+  
+ 
+6.屏蔽默认带有的nouveau
+   打开/lib/modprobe.d/dist-blacklist.conf
+   将nvidiafb注释掉，
+   #blacklist nvidiafb
+   然后添加以下语句：
+   blacklist nouveau
+   options nouveau modeset=0
+  
+ 7.重新启动，查看nouveau是否被禁用
+   #ls mod | grep nouveau
+   如果没有显示相关内容表示禁用成功
+  
+
+ 8.重新建立initramfs image文件
+   # mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bak
+   # dracut /boot/initramfs-$(uname -r).img $(uname -r)
+  
+
+ 9.退出图形界面，进入命令行安装驱动
+   进入下载的驱动所在目录
+   chmod +x NVIDIA-Linux-XXXX.run
+   ./NVIDIA-Linux-XXXX.run
+   安装过程中，选择accept
+   如果提示要修改xorg.conf，选择yes
+
+
+
+二.安装CUDA(我安装的CUDA8.0版本)
+  
+1.选择对应的cuda版本 https://developer.nvidia.com/cuda-downloads
+    sudo rpm -i xxxx.rpm
+    sudo yum clean all
+    sudo yum install cuda
+    
+ 
+2.环境配置
+    #vim/etc/profile
+    export PATH=/usr/local/cuda-8.0/bin:$PATH
+    export LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64:$LD_LIBRARY_PATH
+    
+  
+3.为了能够修改、编译和运行示例，示例代码要以写方式安装。（示例代码在usr/local/cuda-8.0/samples)
+    #cuda-install-samples-8.0.sh  <dir>
+
+  
+4.creating the /usr/local/cuda symbolic link
+    #ln -s /usr/local/cuda /usr/local/cuda-8.0
+  
+5.查看驱动是否安装好
+    #cat /proc/driver/nvidia/version
+  
+  
+6.进入/usr/local/cuda-8.0/samples目录编译示例
+    #make
+  
+  
+7.编译完成后，进入/usr/local/cuda-7.5/samples/1_Utilities/deviceQuery
+    执行 #./deviceQuery
+    如果cuda软件成功安装且配置正确，就可以看到一些CUDA版本，GPU信息
